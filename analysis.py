@@ -11,16 +11,15 @@ def plot_esg_trends(esg_df):
     ax.set_ylabel("Sector")
     return fig
 
-def plot_carbon_impact(df):
-    plt.style.use('seaborn-whitegrid')
-    fig, ax = plt.subplots(figsize=(10, 5))
-    sns.barplot(data=df, x="Ticker", y="Carbon Footprint", ci=None, ax=ax, palette="Reds_d")
-    ax.set_title("Carbon Footprint per Asset (Weighted by Portfolio)")
-    ax.set_xlabel("Ticker")
-    ax.set_ylabel("Carbon Footprint (kg CO₂)")
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+def plot_carbon_impact(portfolio_df):
+    sns.set_theme(style="whitegrid")
+    fig, ax = plt.subplots()
+    sorted_df = portfolio_df.sort_values("Carbon Footprint", ascending=False)
+    ax.barh(sorted_df["Ticker"], sorted_df["Carbon Footprint"], color="gray")
+    ax.set_xlabel("Carbon Footprint (tons CO₂)")
+    ax.set_title("Carbon Footprint by Asset")
     return fig
+
 
 
 
