@@ -42,3 +42,8 @@ def optimize_portfolio(esg_data, esg_min, max_carbon, risk_appetite):
     portfolio_df = portfolio_df.merge(esg_data, on="Ticker", how="left")
 
     return cleaned_weights, performance, portfolio_df
+    
+print("ESG min:", esg_min)
+print("Max carbon:", max_carbon)
+print("Filtered assets:")
+print(filtered[['Ticker', 'ESG Score', 'Carbon Footprint']])
