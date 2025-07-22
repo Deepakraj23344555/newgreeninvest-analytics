@@ -6,7 +6,7 @@ def optimize_portfolio(esg_data, esg_min, max_carbon, risk_appetite):
     price_df = pd.read_csv("data/sample_prices.csv", index_col=0, parse_dates=True)
 
     # Filter based on ESG and Carbon constraints
-    filtered = esg_data[(esg_data['ESG Score'] >= esg_min) & (esg_data['Carbon Intensity'] <= max_carbon)]
+    filtered = esg_data[(esg_data['ESG Score'] >= esg_min) & (esg_data['Carbon Footprint'] <= max_carbon)]
 
     if filtered.empty:
         raise ValueError("No assets match the ESG and Carbon filters. Please loosen your constraints.")
