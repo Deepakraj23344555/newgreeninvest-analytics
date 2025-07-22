@@ -8,7 +8,6 @@ from utils import load_esg_data
 st.set_page_config(page_title="GreenInvest Analytics", layout="wide")
 
 # --- Header
-st.image("assets/logo.png", width=60)
 st.title("🌱 GreenInvest Analytics")
 st.markdown("Smart Investing. Sustainable Future.")
 
