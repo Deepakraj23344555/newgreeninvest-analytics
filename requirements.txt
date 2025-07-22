@@ -7,3 +7,5 @@ seaborn
 PyPortfolioOpt
 scikit-learn
 fpdf
+feedparser
+
