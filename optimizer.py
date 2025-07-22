@@ -1,12 +1,33 @@
-from pypfopt import EfficientFrontier, risk_models, expected_returns
+# optimizer.py
+
 import pandas as pd
-from sklearn.covariance import LedoitWolf
+from pypfopt import EfficientFrontier, risk_models, expected_returns
 
 def optimize_portfolio(esg_data, esg_min, max_carbon, risk_appetite):
+    """
+    Optimize portfolio based on ESG and carbon footprint constraints and risk appetite.
+    
+    Parameters:
+        esg_data (pd.DataFrame): ESG data containing Ticker, ESG Score, Carbon Footprint, etc.
+        esg_min (int): Minimum acceptable ESG score.
+        max_carbon (float): Maximum allowed carbon footprint.
+        risk_appetite (str): Risk level - "Low", "Medium", or "High".
+        
+    Returns:
+        cleaned_weights (dict): Optimized weights for each ticker.
+        performance (tuple): Portfolio performance metrics (return, volatility, sharpe).
+        portfolio_df (pd.DataFrame): DataFrame containing tickers, weights and ESG data.
+    """
     price_df = pd.read_csv("data/sample_prices.csv", index_col=0, parse_dates=True)
 
-    # Filter based on ESG and Carbon constraints
+    print("ESG min:", esg_min)
+    print("Max carbon:", max_carbon)
+
+    # Filter assets based on ESG and Carbon Footprint constraints
     filtered = esg_data[(esg_data['ESG Score'] >= esg_min) & (esg_data['Carbon Footprint'] <= max_carbon)]
+
+    print("Filtered assets:")
+    print(filtered[['Ticker', 'ESG Score', 'Carbon Footprint']])
 
     if filtered.empty:
         raise ValueError("No assets match the ESG and Carbon filters. Please loosen your constraints.")
@@ -28,22 +49,18 @@ def optimize_portfolio(esg_data, esg_min, max_carbon, risk_appetite):
         ef.min_volatility()
     elif risk_appetite == "High":
         ef.max_sharpe()
-    else:
+    else:  # Medium risk
         ef.efficient_return(target_return=mu.mean())
 
     cleaned_weights = ef.clean_weights()
     performance = ef.portfolio_performance(verbose=False)
 
     portfolio_df = pd.DataFrame({
-        "Ticker": cleaned_weights.keys(),
-        "Weight": cleaned_weights.values()
+        "Ticker": list(cleaned_weights.keys()),
+        "Weight": list(cleaned_weights.values())
     })
+
     portfolio_df = portfolio_df[portfolio_df["Weight"] > 0]
     portfolio_df = portfolio_df.merge(esg_data, on="Ticker", how="left")
 
     return cleaned_weights, performance, portfolio_df
-    
-print("ESG min:", esg_min)
-print("Max carbon:", max_carbon)
-print("Filtered assets:")
-print(filtered[['Ticker', 'ESG Score', 'Carbon Footprint']])
