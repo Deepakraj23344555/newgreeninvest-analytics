@@ -1,15 +1,14 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def plot_esg_trends(df):
-    plt.style.use('seaborn-whitegrid')
-    fig, ax = plt.subplots(figsize=(10, 5))
-    sns.barplot(data=df, x="Sector", y="ESG Score", ci=None, ax=ax, palette="Greens_d")
-    ax.set_title("Average ESG Scores by Sector")
-    ax.set_xlabel("Sector")
-    ax.set_ylabel("ESG Score")
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+def plot_esg_trends(esg_df):
+    sns.set_theme(style="whitegrid")
+    fig, ax = plt.subplots()
+    sectors = esg_df.groupby("Sector")["ESG Score"].mean().sort_values()
+    sectors.plot(kind="barh", ax=ax, color="green")
+    ax.set_title("Average ESG Score by Sector")
+    ax.set_xlabel("ESG Score")
+    ax.set_ylabel("Sector")
     return fig
 
 def plot_carbon_impact(df):
@@ -22,3 +21,6 @@ def plot_carbon_impact(df):
     plt.xticks(rotation=45)
     plt.tight_layout()
     return fig
+
+
+
