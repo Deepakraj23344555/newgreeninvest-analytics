@@ -10,7 +10,6 @@ from esg_news import get_esg_news
 st.set_page_config(page_title="GreenInvest Analytics", layout="wide")
 
 # Logo
-st.image("assets/logo.png", width=60)
 st.title("GreenInvest Analytics")
 
 # Load ESG data
