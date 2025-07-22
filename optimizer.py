@@ -1,46 +1,44 @@
-from pypfopt.efficient_frontier import EfficientFrontier
-from pypfopt.risk_models import CovarianceShrinkage
-from pypfopt.expected_returns import mean_historical_return
+from pypfopt import EfficientFrontier, risk_models, expected_returns
 import pandas as pd
+from sklearn.covariance import LedoitWolf
 
-def optimize_portfolio(esg_data, min_esg, max_carbon, risk_level):
-    # Load historical price data
+def optimize_portfolio(esg_data, esg_min, max_carbon, risk_appetite):
     price_df = pd.read_csv("data/sample_prices.csv", index_col=0, parse_dates=True)
 
-    # Filter stocks based on ESG and carbon constraints
-    filtered = esg_data[
-        (esg_data['ESG Score'] >= min_esg) & 
-        (esg_data['Carbon Footprint'] <= max_carbon)
-    ]
+    # Filter based on ESG and Carbon constraints
+    filtered = esg_data[(esg_data['ESG Score'] >= esg_min) & (esg_data['Carbon Intensity'] <= max_carbon)]
+
+    if filtered.empty:
+        raise ValueError("No assets match the ESG and Carbon filters. Please loosen your constraints.")
 
     tickers = filtered['Ticker'].tolist()
+    available_tickers = [t for t in tickers if t in price_df.columns]
 
-    # Calculate expected returns and covariance matrix
-    mu = mean_historical_return(price_df[tickers])
-    S = CovarianceShrinkage(price_df[tickers]).ledoit_wolf()
+    if len(available_tickers) < 2:
+        raise ValueError("Not enough valid tickers with price data. Please adjust your filters or data.")
 
-    # Initialize Efficient Frontier optimizer
+    price_data = price_df[available_tickers]
+
+    mu = expected_returns.mean_historical_return(price_data)
+    S = risk_models.CovarianceShrinkage(price_data).ledoit_wolf()
+
     ef = EfficientFrontier(mu, S)
 
-    # Optimize based on risk appetite
-    if risk_level == "High":
-        weights = ef.max_sharpe()
+    if risk_appetite == "Low":
+        ef.min_volatility()
+    elif risk_appetite == "High":
+        ef.max_sharpe()
     else:
-        weights = ef.min_volatility()
+        ef.efficient_return(target_return=mu.mean())
 
     cleaned_weights = ef.clean_weights()
+    performance = ef.portfolio_performance(verbose=False)
 
-    # Prepare portfolio DataFrame with weights and ESG info
     portfolio_df = pd.DataFrame({
-        "Ticker": list(cleaned_weights.keys()),
-        "Weight": list(cleaned_weights.values())
+        "Ticker": cleaned_weights.keys(),
+        "Weight": cleaned_weights.values()
     })
-
-    portfolio_df = portfolio_df.merge(esg_data, on="Ticker")
-
-    performance = {
-        "return": ef.portfolio_performance()[0] * 100,  # Convert to %
-        "carbon": (portfolio_df["Weight"] * portfolio_df["Carbon Footprint"]).sum()
-    }
+    portfolio_df = portfolio_df[portfolio_df["Weight"] > 0]
+    portfolio_df = portfolio_df.merge(esg_data, on="Ticker", how="left")
 
     return cleaned_weights, performance, portfolio_df
