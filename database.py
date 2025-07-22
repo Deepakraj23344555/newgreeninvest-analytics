@@ -53,3 +53,12 @@ def save_portfolio(user, df, performance):
     ''', rows)
     conn.commit()
     conn.close()
+
+def save_history(user, weights, score, carbon, date):
+    conn = sqlite3.connect("db/portfolios.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO history (user, weights, esg_score, carbon_impact, date) VALUES (?, ?, ?, ?, ?)",
+                   (user, json.dumps(weights), score, carbon, date))
+    conn.commit()
+    conn.close()
+
