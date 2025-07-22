@@ -1,7 +1,9 @@
 streamlit
 pandas
 numpy
+yfinance
 matplotlib
 seaborn
 PyPortfolioOpt
+scikit-learn
 fpdf
