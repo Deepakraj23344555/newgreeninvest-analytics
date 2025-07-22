@@ -20,6 +20,14 @@ def plot_carbon_impact(portfolio_df):
     ax.set_title("Carbon Footprint by Asset")
     return fig
 
+def plot_sector_esg_breakdown(df):
+    sector_df = df.groupby("Sector")[["ESG Score", "Carbon Footprint"]].mean().sort_values("ESG Score", ascending=False)
+    fig, ax = plt.subplots()
+    sector_df.plot(kind="bar", ax=ax)
+    ax.set_title("Average ESG & Carbon Footprint by Sector")
+    return fig
+
+
 
 
 
